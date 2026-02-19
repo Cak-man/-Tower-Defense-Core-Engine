@@ -1,0 +1,41 @@
+using UnityEngine;
+
+public class Bullet : MonoBehaviour
+{
+    private Transform target;
+    private float speed;
+
+    public float damage = 10f; // Inspector�dan ayarlan�r
+
+    public void Init(Transform _target, float _speed)
+    {
+        target = _target;
+        speed = _speed;
+        Destroy(gameObject, 5f);
+    }
+
+    void Update()
+    {
+        if (target == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            target.position,
+            speed * Time.deltaTime
+        );
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        EnemyHealth enemy = other.GetComponent<EnemyHealth>();
+        if (enemy != null)
+        {
+            enemy.TakeDamage(damage);
+            Destroy(gameObject);
+        }
+    }
+}
