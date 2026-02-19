@@ -1,0 +1,32 @@
+using UnityEngine;
+using UnityEngine.AI;
+
+public class GoToTargetWithNavMesh : MonoBehaviour
+{
+    [Header("Hedef Nokta")]
+    public Transform targetPoint;   // Inspector�dan s�r�kle
+
+    [Header("Agent Ayarlar�")]
+    public float stoppingDistance = 1.2f;
+
+    private NavMeshAgent agent;
+
+    void Start()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        agent.stoppingDistance = stoppingDistance;
+
+        if (targetPoint != null)
+        {
+            agent.SetDestination(targetPoint.position);
+        }
+    }
+
+    void Update()
+    {
+        if (targetPoint != null)
+        {
+            agent.SetDestination(targetPoint.position); // Hedef hareket ediyorsa takip eder
+        }
+    }
+}
