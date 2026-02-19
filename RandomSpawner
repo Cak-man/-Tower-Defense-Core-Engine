@@ -1,0 +1,49 @@
+using System.Collections;
+using UnityEngine;
+
+public class RandomSpawner : MonoBehaviour
+{
+    [Header("Spawn Edilecek Objeler")]
+    public GameObject[] spawnPrefabs;   // Inspector’dan birden fazla prefab seçebilirsin
+
+    [Header("Spawn Noktası")]
+    public Transform spawnPoint;        // Merminin çıkacağı yer
+
+    [Header("Zaman Ayarları")]
+    public float minSpawnTime = 0.2f;   // En kısa süre
+    public float maxSpawnTime = 1.5f;   // En uzun süre
+
+    [Header("Güç Ayarı (İsteğe Bağlı)")]
+    public float force = 500f;          // Rigidbody varsa ileri fırlatır
+
+    private void Start()
+    {
+        StartCoroutine(SpawnLoop());
+    }
+
+    IEnumerator SpawnLoop()
+    {
+        while (true)
+        {
+            float waitTime = Random.Range(minSpawnTime, maxSpawnTime);
+            yield return new WaitForSeconds(waitTime);
+
+            Spawn();
+        }
+    }
+
+    void Spawn()
+    {
+        if (spawnPrefabs.Length == 0 || spawnPoint == null) return;
+
+        GameObject randomPrefab = spawnPrefabs[Random.Range(0, spawnPrefabs.Length)];
+
+        GameObject obj = Instantiate(randomPrefab, spawnPoint.position, spawnPoint.rotation);
+
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.AddForce(spawnPoint.forward * force);
+        }
+    }
+}
