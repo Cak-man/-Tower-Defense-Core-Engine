@@ -1,0 +1,30 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
+
+public class LoadSceneOnEnemyTrigger : MonoBehaviour
+{
+    [Header("Ayarlar")]
+    public string enemyTag = "Enemy";     // D��man etiketi (istersen Inspector'dan de�i�tir)
+    public string sceneName;              // Y�klenecek sahne ad� (Inspector'dan yaz)
+    public float delay = 1f;              // Ka� saniye sonra y�klensin
+
+    private bool triggered = false;       // Birden fazla tetiklenmesin diye
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (triggered) return;
+
+        if (other.CompareTag(enemyTag))
+        {
+            triggered = true;
+            StartCoroutine(LoadSceneAfterDelay());
+        }
+    }
+
+    IEnumerator LoadSceneAfterDelay()
+    {
+        yield return new WaitForSeconds(delay);
+        SceneManager.LoadScene(sceneName);
+    }
+}
