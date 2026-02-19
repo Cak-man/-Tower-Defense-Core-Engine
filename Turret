@@ -1,0 +1,100 @@
+using System.Collections;
+using UnityEngine;
+
+public class AutoShooter : MonoBehaviour
+{
+    [Header("Bağlantılar")]
+    public GameObject bulletPrefab;
+    public Transform firePoint;
+    [Header("Ses")]
+    public AudioSource audioSource;
+    public AudioClip shootClip;
+
+    [Tooltip("Dönecek parça (namlu/kafa)")]
+    public Transform turretHead;
+
+    [Header("Ayarlar")]
+    public float fireRate = 2f;      // saniyede kaç mermi
+    public float bulletSpeed = 15f;  // mermi hızı
+
+    [Tooltip("Kulenin dönüş hızı")]
+    public float rotateSpeed = 8f;
+
+    [Header("Ses")]
+    public AudioSource shootAudio;   // 👈 Inspector’dan atanacak
+
+    private Transform currentTarget;
+    private Coroutine shootRoutine;
+
+    private void Update()
+    {
+        if (currentTarget != null && turretHead != null)
+        {
+            RotateToTarget();
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            currentTarget = other.transform;
+
+            if (shootRoutine == null)
+                shootRoutine = StartCoroutine(ShootRoutine());
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Enemy") && other.transform == currentTarget)
+        {
+            currentTarget = null;
+
+            if (shootRoutine != null)
+            {
+                StopCoroutine(shootRoutine);
+                shootRoutine = null;
+            }
+        }
+    }
+
+    void RotateToTarget()
+    {
+        Vector3 dir = currentTarget.position - turretHead.position;
+        dir.y = 0f;
+
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+        turretHead.rotation = Quaternion.Slerp(
+            turretHead.rotation,
+            targetRot,
+            rotateSpeed * Time.deltaTime
+        );
+    }
+
+    IEnumerator ShootRoutine()
+    {
+        while (currentTarget != null)
+        {
+            Shoot();
+            yield return new WaitForSeconds(1f / fireRate);
+        }
+
+        shootRoutine = null;
+    }
+
+    void Shoot()
+    {
+        if (currentTarget == null) return;
+
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        bullet.GetComponent<Bullet>().Init(currentTarget, bulletSpeed);
+
+        // 🔊 Ateş sesi
+        if (audioSource != null && shootClip != null)
+        {
+            audioSource.PlayOneShot(shootClip);
+        }
+    }
+
+}
